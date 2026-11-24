@@ -1,0 +1,532 @@
+<div class="onboarding-page">
+  <!-- Top Navigation / Brand Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-block">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Employee Onboarding</h1>
+          <p class="brand-subtitle">HR Management Portal &bull; Angular Signal Forms</p>
+        </div>
+      </div>
+      <div class="header-status">
+        @if (onboardingForm().pending()) {
+          <span class="status-pill status-pending">
+            <span class="spinner-dot"></span> Checking email...
+          </span>
+        } @else if (onboardingForm().valid()) {
+          <span class="status-pill status-valid">
+            <svg viewBox="0 0 20 20" fill="currentColor" class="pill-icon">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            Form Ready
+          </span>
+        } @else {
+          <span class="status-pill status-incomplete">
+            Incomplete
+          </span>
+        }
+      </div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <!-- Success Banner -->
+    @if (showSuccess()) {
+      <div class="success-banner" role="alert">
+        <div class="success-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="success-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div class="success-body">
+          <h3 class="success-title">Employee Onboarding Submitted!</h3>
+          <p class="success-desc">
+            Welcome aboard, <strong>{{ submittedEmployeeName() }}</strong>. The employee record has been registered and the onboarding form has been reset for the next entry.
+          </p>
+        </div>
+        <button type="button" class="success-close-btn" (click)="dismissSuccess()" aria-label="Dismiss alert">
+          &times;
+        </button>
+      </div>
+    }
+
+    <!-- Onboarding Form Container -->
+    <div class="form-card">
+      <form [formRoot]="onboardingForm" (submit)="onSubmit($event)" novalidate>
+
+        <!-- ========================================== -->
+        <!-- SECTION 1: Personal Details               -->
+        <!-- ========================================== -->
+        <section class="form-section">
+          <div class="section-header">
+            <div class="section-badge">1</div>
+            <div>
+              <h2 class="section-title">Personal Information</h2>
+              <p class="section-desc">Employee identification and basic personal details</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- First Name -->
+            <div class="form-group">
+              <label class="form-label" for="firstName">
+                First Name <span class="required-star">*</span>
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                class="form-control"
+                placeholder="e.g. John"
+                [formField]="onboardingForm.firstName"
+              />
+              <app-field-error
+                [errors]="onboardingForm.firstName().errors()"
+                [touched]="onboardingForm.firstName().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- Last Name -->
+            <div class="form-group">
+              <label class="form-label" for="lastName">
+                Last Name <span class="required-star">*</span>
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                class="form-control"
+                placeholder="e.g. Doe"
+                [formField]="onboardingForm.lastName"
+              />
+              <app-field-error
+                [errors]="onboardingForm.lastName().errors()"
+                [touched]="onboardingForm.lastName().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- Email (VR-2 with async check) -->
+            <div class="form-group">
+              <div class="label-row">
+                <label class="form-label" for="email">
+                  Email Address <span class="required-star">*</span>
+                </label>
+                @if (onboardingForm.email().pending()) {
+                  <span class="checking-indicator">
+                    <span class="spinner-inline"></span> Checking...
+                  </span>
+                }
+              </div>
+              <div class="input-with-status">
+                <input
+                  id="email"
+                  type="email"
+                  class="form-control"
+                  placeholder="e.g. john.doe@company.com"
+                  [formField]="onboardingForm.email"
+                />
+              </div>
+              <app-field-error
+                [errors]="onboardingForm.email().errors()"
+                [touched]="onboardingForm.email().touched()"
+                [submitted]="hasSubmitted()"
+              />
+              <small class="field-hint">Note: admin&#64;company.com and hr&#64;company.com are already registered.</small>
+            </div>
+
+            <!-- Phone (VR-3) -->
+            <div class="form-group">
+              <label class="form-label" for="phone">
+                Phone Number <span class="required-star">*</span>
+              </label>
+              <input
+                id="phone"
+                type="tel"
+                class="form-control"
+                placeholder="10 digits starting with 6, 7, 8, or 9"
+                [formField]="onboardingForm.phone"
+              />
+              <app-field-error
+                [errors]="onboardingForm.phone().errors()"
+                [touched]="onboardingForm.phone().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- Date of Birth (VR-4) -->
+            <div class="form-group">
+              <label class="form-label" for="dateOfBirth">
+                Date of Birth <span class="required-star">*</span>
+              </label>
+              <input
+                id="dateOfBirth"
+                type="date"
+                class="form-control"
+                [formField]="onboardingForm.dateOfBirth"
+              />
+              <app-field-error
+                [errors]="onboardingForm.dateOfBirth().errors()"
+                [touched]="onboardingForm.dateOfBirth().touched()"
+                [submitted]="hasSubmitted()"
+              />
+              <small class="field-hint">Must be at least 18 years old on the joining date.</small>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 2: Employment Details             -->
+        <!-- ========================================== -->
+        <section class="form-section">
+          <div class="section-header">
+            <div class="section-badge">2</div>
+            <div>
+              <h2 class="section-title">Employment Details</h2>
+              <p class="section-desc">Role specification, department, and timeline</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- Employment Type -->
+            <div class="form-group">
+              <label class="form-label" for="employmentType">
+                Employment Type <span class="required-star">*</span>
+              </label>
+              <select
+                id="employmentType"
+                class="form-control"
+                [formField]="onboardingForm.employmentType"
+                (change)="onEmploymentTypeSelect($event)"
+              >
+                <option value="Full-time">Full-time</option>
+                <option value="Contract">Contract</option>
+                <option value="Intern">Intern</option>
+              </select>
+              <app-field-error
+                [errors]="onboardingForm.employmentType().errors()"
+                [touched]="onboardingForm.employmentType().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- Department -->
+            <div class="form-group">
+              <label class="form-label" for="department">
+                Department <span class="required-star">*</span>
+              </label>
+              <select
+                id="department"
+                class="form-control"
+                [formField]="onboardingForm.department"
+                (change)="onDepartmentSelect($event)"
+              >
+                <option value="">-- Select Department --</option>
+                @for (dept of departments; track dept) {
+                  <option [value]="dept">{{ dept }}</option>
+                }
+              </select>
+              <app-field-error
+                [errors]="onboardingForm.department().errors()"
+                [touched]="onboardingForm.department().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- Designation (Dependent on department, cleared when department changes) -->
+            <div class="form-group">
+              <label class="form-label" for="designation">
+                Designation <span class="required-star">*</span>
+              </label>
+              <select
+                id="designation"
+                class="form-control"
+                [formField]="onboardingForm.designation"
+              >
+                <option value="">
+                  {{ onboardingForm.department().value() ? '-- Select Designation --' : '-- Select department first --' }}
+                </option>
+                @for (des of availableDesignations(); track des) {
+                  <option [value]="des">{{ des }}</option>
+                }
+              </select>
+              <app-field-error
+                [errors]="onboardingForm.designation().errors()"
+                [touched]="onboardingForm.designation().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- Joining Date -->
+            <div class="form-group">
+              <label class="form-label" for="joiningDate">
+                Joining Date <span class="required-star">*</span>
+              </label>
+              <input
+                id="joiningDate"
+                type="date"
+                class="form-control"
+                [formField]="onboardingForm.joiningDate"
+              />
+              <app-field-error
+                [errors]="onboardingForm.joiningDate().errors()"
+                [touched]="onboardingForm.joiningDate().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- End Date (VR-5: Shown and required only for Contract and Intern) -->
+            @if (!onboardingForm.endDate().hidden()) {
+              <div class="form-group animate-fade-in">
+                <label class="form-label" for="endDate">
+                  End Date <span class="required-star">*</span>
+                  <span class="badge-role">{{ onboardingForm.employmentType().value() }}</span>
+                </label>
+                <input
+                  id="endDate"
+                  type="date"
+                  class="form-control"
+                  [formField]="onboardingForm.endDate"
+                />
+                <app-field-error
+                  [errors]="onboardingForm.endDate().errors()"
+                  [touched]="onboardingForm.endDate().touched()"
+                  [submitted]="hasSubmitted()"
+                />
+                <small class="field-hint">Must be after the joining date.</small>
+              </div>
+            }
+
+            <!-- Manager Email (VR-6) -->
+            <div class="form-group">
+              <label class="form-label" for="managerEmail">
+                Manager Email <span class="required-star">*</span>
+              </label>
+              <input
+                id="managerEmail"
+                type="email"
+                class="form-control"
+                placeholder="e.g. manager@company.com"
+                [formField]="onboardingForm.managerEmail"
+              />
+              <app-field-error
+                [errors]="onboardingForm.managerEmail().errors()"
+                [touched]="onboardingForm.managerEmail().touched()"
+                [submitted]="hasSubmitted()"
+              />
+              <small class="field-hint">Cannot be identical to employee email.</small>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 3: Address                        -->
+        <!-- ========================================== -->
+        <section class="form-section">
+          <div class="section-header">
+            <div class="section-badge">3</div>
+            <div>
+              <h2 class="section-title">Residential Address</h2>
+              <p class="section-desc">Current residential and communication address</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- Line 1 -->
+            <div class="form-group full-width">
+              <label class="form-label" for="addressLine1">
+                Address Line 1 <span class="required-star">*</span>
+              </label>
+              <input
+                id="addressLine1"
+                type="text"
+                class="form-control"
+                placeholder="House/Flat number, Street name, Area"
+                [formField]="onboardingForm.address.line1"
+              />
+              <app-field-error
+                [errors]="onboardingForm.address.line1().errors()"
+                [touched]="onboardingForm.address.line1().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- City -->
+            <div class="form-group">
+              <label class="form-label" for="city">
+                City <span class="required-star">*</span>
+              </label>
+              <input
+                id="city"
+                type="text"
+                class="form-control"
+                placeholder="e.g. Bangalore"
+                [formField]="onboardingForm.address.city"
+              />
+              <app-field-error
+                [errors]="onboardingForm.address.city().errors()"
+                [touched]="onboardingForm.address.city().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+
+            <!-- PIN Code (VR-7: 6 digits, does not start with 0) -->
+            <div class="form-group">
+              <label class="form-label" for="pin">
+                PIN Code <span class="required-star">*</span>
+              </label>
+              <input
+                id="pin"
+                type="text"
+                class="form-control"
+                placeholder="6 digits (cannot start with 0)"
+                [formField]="onboardingForm.address.pin"
+              />
+              <app-field-error
+                [errors]="onboardingForm.address.pin().errors()"
+                [touched]="onboardingForm.address.pin().touched()"
+                [submitted]="hasSubmitted()"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- SECTION 4: Skills                         -->
+        <!-- ========================================== -->
+        <section class="form-section">
+          <div class="section-header section-header-split">
+            <div class="header-left">
+              <div class="section-badge">4</div>
+              <div>
+                <h2 class="section-title">Technical Skills</h2>
+                <p class="section-desc">Add 2 to 6 skills with proficiency ratings</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn-add-skill"
+              (click)="addSkill()"
+              [disabled]="onboardingModel().skills.length >= 6"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              Add Skill ({{ onboardingModel().skills.length }}/6)
+            </button>
+          </div>
+
+          <!-- Overall Skills List Error (VR-8: 2 to 6 skills) -->
+          <app-field-error
+            [errors]="onboardingForm.skills().errors()"
+            [touched]="onboardingForm.skills().touched()"
+            [submitted]="hasSubmitted()"
+          />
+
+          <div class="skills-list">
+            @for (skill of onboardingForm.skills; track $index) {
+              <div class="skill-row-card">
+                <div class="skill-index-badge">#{{ $index + 1 }}</div>
+
+                <div class="skill-input-group">
+                  <label class="form-label visually-hidden" [for]="'skillName-' + $index">Skill Name</label>
+                  <input
+                    [id]="'skillName-' + $index"
+                    type="text"
+                    class="form-control"
+                    placeholder="Skill name (e.g. TypeScript, Angular, Figma)"
+                    [formField]="skill.name"
+                  />
+                  <app-field-error
+                    [errors]="skill.name().errors()"
+                    [touched]="skill.name().touched()"
+                    [submitted]="hasSubmitted()"
+                  />
+                </div>
+
+                <div class="skill-rating-group">
+                  <label class="form-label rating-heading">Proficiency Rating <span class="required-star">*</span></label>
+                  <!-- StarRating reusable component implementing FormValueControl without ControlValueAccessor -->
+                  <app-star-rating [formField]="skill.rating" />
+                  <app-field-error
+                    [errors]="skill.rating().errors()"
+                    [touched]="skill.rating().touched()"
+                    [submitted]="hasSubmitted()"
+                  />
+                </div>
+
+                <div class="skill-action-group">
+                  <button
+                    type="button"
+                    class="btn-remove-skill"
+                    (click)="removeSkill($index)"
+                    [disabled]="onboardingModel().skills.length <= 2"
+                    [attr.title]="onboardingModel().skills.length <= 2 ? 'Minimum 2 skills required' : 'Remove skill'"
+                    aria-label="Remove skill"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" class="trash-icon">
+                      <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- Form Footer / Actions -->
+        <div class="form-actions-bar">
+          <div class="actions-status">
+            @if (onboardingForm.email().pending()) {
+              <span class="status-text text-amber">
+                <span class="spinner-sm"></span> Verifying email uniqueness...
+              </span>
+            } @else if (!onboardingForm().valid() && hasSubmitted()) {
+              <span class="status-text text-danger">
+                Please resolve the validation errors above before submitting.
+              </span>
+            } @else if (onboardingForm().valid()) {
+              <span class="status-text text-success">
+                All fields are valid. Ready to submit!
+              </span>
+            }
+          </div>
+
+          <div class="actions-buttons">
+            <button
+              type="button"
+              class="btn-secondary"
+              (click)="resetForm()"
+            >
+              Reset Form
+            </button>
+
+            <!-- Submit is enabled only when form is valid and no check is running -->
+            <button
+              type="submit"
+              class="btn-primary"
+              [disabled]="!onboardingForm().valid() || onboardingForm().pending()"
+            >
+              @if (onboardingForm().pending()) {
+                <span class="spinner-btn"></span> Checking...
+              } @else {
+                <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Complete Onboarding
+              }
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+</div>
